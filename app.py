@@ -3,9 +3,9 @@ import os
 from shutil import copy
 import cv2
 import time
-# Load the jpg file into a numpy array
+
 directory=input("Enter directory: ")
-knownImgPath='known'#input("Enter path of known images: ")
+knownImgPath='known'
 knownFace=[]
 counter=0
 
@@ -41,6 +41,8 @@ for filename in os.listdir(directory):
     for (x, y, w, h) in faces:
         cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 2)
         faces = img[y:y + h, x:x + w]
+        if not os.path.exists('faces'):
+            os.makedirs('faces')
         cv2.imwrite('faces\\temp_face'+str(counter)+'.jpg', faces)
   
         unknown=face_recognition.load_image_file('faces\\temp_face'+str(counter)+'.jpg')
