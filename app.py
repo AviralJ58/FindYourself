@@ -41,7 +41,7 @@ def find_images(lower,upper,files,knownFace,pid):
         faceCascade=cv2.CascadeClassifier("haarcascade\haarcascade_frontalface_alt.xml")
         img=cv2.imread(filename)
         gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        faces=faceCascade.detectMultiScale(gray,1.05,6,minSize=[30,30])
+        faces=faceCascade.detectMultiScale(gray,1.05,6,minSize=(30,30))
         print("Found {} face(s) in {}".format(len(faces),filename))
 
         for (x, y, w, h) in faces:
@@ -83,9 +83,10 @@ if __name__ =='__main__':
     directory=input("Enter directory: ")
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
-        if (f.endswith(".jpg") or f.endswith(".png") or f.endswith(".jpeg")):
+        if (f.lower().endswith(".jpg") or f.lower().endswith(".png") or f.lower().endswith(".jpeg")):
             files.append(f)
 
+    print(files)
     capture_image()
     p1=multiprocessing.Process(target=find_images, args=(0,int(len(files)/2),files,knownFace,1))
     p2=multiprocessing.Process(target=find_images, args=(int(len(files)/2),len(files),files,knownFace,2))
@@ -94,6 +95,6 @@ if __name__ =='__main__':
     p1.join()
     p2.join()
     shutil.rmtree('faces', ignore_errors=True)
-    # shutil.rmtree('known', ignore_errors=True)
+    shutil.rmtree('known', ignore_errors=True)
     end=time.time()
     print(end-start)
