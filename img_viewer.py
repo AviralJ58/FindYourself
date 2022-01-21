@@ -6,6 +6,7 @@ import time
 import multiprocessing
 import shutil
 import PySimpleGUI as sg
+from PIL import Image, ImageTk, ImageSequence
 
 
 def capture_image():
@@ -34,17 +35,10 @@ def capture_image():
             print("Failed to encode. Trying again.")
             capture_image()
 
-    print("Encoded")
-    p1=multiprocessing.Process(target=find_images, args=(0,int(len(files)/2),files,knownFace,1))
-    p2=multiprocessing.Process(target=find_images, args=(int(len(files)/2),len(files),files,knownFace,2))
-    p1.start()
-    p2.start()
-    p1.join()
-    p2.join()
-    shutil.rmtree('faces', ignore_errors=True)
-    shutil.rmtree('known', ignore_errors=True)
-    end=time.time()
-    print(end-start)
+    encode = 1
+    print("Encoding Complete!")
+    return encode
+    
 
 
 
@@ -103,7 +97,27 @@ def find_images(lower, upper, files, knownFace, pid):
 
 
 
-    
+def gify():
+    gif_filename = r'loading.gif'
+
+    layout = [[sg.Text('Finding you!', background_color='#A37A3B', text_color='#FFF000',  justification='c', key='-T-', font=("Bodoni MT", 25))],
+            [sg.Image(key='-IMAGE-')]]
+
+    window = sg.Window('Window Title', layout, element_justification='c', margins=(0,0), element_padding=(0,0), finalize=True)
+
+    window['-T-'].expand(True, True, True)      # Make the Text element expand to take up all available space
+
+    interframe_duration = Image.open(gif_filename).info['duration']     # get how long to delay between frames
+
+    while True:
+        for frame in ImageSequence.Iterator(Image.open(gif_filename)):
+            event, values = window.read(timeout=interframe_duration)
+            if event == sg.WIN_CLOSED:
+                exit(0)
+            window['-IMAGE-'].update(data=ImageTk.PhotoImage(frame) )
+            #Close window when p1 and p2 are done
+
+
 
 
 
@@ -119,19 +133,26 @@ def capture_image_window():
         if event in (None, 'Cancel', sg.WIN_CLOSED):
             
             capture_window.close()
-            
-            index_window.close()
             break
             
         elif event == 'OK':
             
-            capture_image()
-            capture_window.close()
+            key = capture_image()
+            if key !=1:
+                sg.popup('Please try again')
+                break
+
+            else:
+                sg.popup('Images Captured!')
+                capture_window.close()
+                break
+  
+            
 
 
 def index_window():
     # Create PySimpleGUI App for this program
-    sg.theme('Dark Grey 13')
+    sg.theme('Dark Blue 2')
     index_layout = [
         [sg.Text('Add path of the folder containing images to be indexed.')],
         [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
@@ -154,7 +175,31 @@ def index_window():
 
 
 
+def mainfunc():
+    print("Starting...")
+    p0=multiprocessing.Process(target=gify)
+    p1=multiprocessing.Process(target=find_images, args=(0,int(len(files)/2),files,knownFace,1))
+    p2=multiprocessing.Process(target=find_images, args=(int(len(files)/2),len(files),files,knownFace,2))
+    p0.start()
+    p1.start()
+    p2.start()
+ 
+    p1.join()
+    p2.join()   
+    #if p1 and p2 are finsished, then close the window
+    print("Done!")
 
+    shutil.rmtree('faces', ignore_errors=True)
+    shutil.rmtree('known', ignore_errors=True)
+    end=time.time()
+    print(end-start)
+
+    if end-start>0:
+        p0.terminate()
+        sg.popup('Time taken: '+str(end-start))
+        
+        return 0
+    
 
 
 
@@ -172,12 +217,12 @@ if __name__ == '__main__':
     else:
         for filename in os.listdir(directory):
             f = os.path.join(directory, filename)
-        if (f.lower().endswith(".jpg") or f.lower().endswith(".png") or f.lower().endswith(".jpeg")):
-            files.append(f)
+            if (f.lower().endswith(".jpg") or f.lower().endswith(".png") or f.lower().endswith(".jpeg")):
+                files.append(f)
         capture_image_window()
-
-    
-    print("Starting...")
+    mainfunc()
+    #gify()
+   
 
 
 
@@ -200,4 +245,3 @@ if __name__ == '__main__':
     # shutil.rmtree('known', ignore_errors=True)
     # end=time.time()
     # print(end-start)
-    window.close()
