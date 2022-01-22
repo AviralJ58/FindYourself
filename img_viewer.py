@@ -7,7 +7,7 @@ import multiprocessing
 import shutil
 import PySimpleGUI as sg
 from PIL import Image, ImageTk, ImageSequence
-
+sg.theme('Dark Blue 2')
 
 def capture_image():
     global knownFace
@@ -103,7 +103,7 @@ def gify():
     layout = [[sg.Text('Finding you!', background_color='#A37A3B', text_color='#FFF000',  justification='c', key='-T-', font=("Bodoni MT", 25))],
             [sg.Image(key='-IMAGE-')]]
 
-    window = sg.Window('Window Title', layout, element_justification='c', margins=(0,0), element_padding=(0,0), finalize=True)
+    window = sg.Window('Window Title', layout,size=(400, 400),element_justification='c', margins=(0,0), element_padding=(0,0), finalize=True)
 
     window['-T-'].expand(True, True, True)      # Make the Text element expand to take up all available space
 
@@ -127,7 +127,7 @@ def capture_image_window():
         [sg.Text('Capture Image')],
         [sg.B('OK'), sg.Cancel()]
     ]
-    capture_window = sg.Window('Capture Image Window', capture_window_layout)
+    capture_window = sg.Window('Capture Image Window', capture_window_layout,size=(400, 400))
     while True:
         event, values = capture_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
@@ -159,7 +159,7 @@ def index_window():
             sg.FolderBrowse(),],
         [sg.Submit(), sg.Cancel()]
     ]
-    index_window = sg.Window('Index Window', index_layout)
+    index_window = sg.Window('Index Window', index_layout,size=(400, 400))
 
     while True:
         event, values = index_window.read()
@@ -221,27 +221,4 @@ if __name__ == '__main__':
                 files.append(f)
         capture_image_window()
     mainfunc()
-    #gify()
-   
-
-
-
-    # start= time.time()
-    # knownFace=[]
-    # files=[]
-    # for filename in os.listdir(directory):
-    #     f = os.path.join(directory, filename)
-    #     if (f.lower().endswith(".jpg") or f.lower().endswith(".png") or f.lower().endswith(".jpeg")):
-    #         files.append(f)
-
-    # print(files)
-    # p1=multiprocessing.Process(target=find_images, args=(0,int(len(files)/2),files,knownFace,1))
-    # p2=multiprocessing.Process(target=find_images, args=(int(len(files)/2),len(files),files,knownFace,2))
-    # p1.start()
-    # p2.start()
-    # p1.join()
-    # p2.join()
-    # shutil.rmtree('faces', ignore_errors=True)
-    # shutil.rmtree('known', ignore_errors=True)
-    # end=time.time()
-    # print(end-start)
+    
