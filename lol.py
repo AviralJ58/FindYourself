@@ -7,9 +7,6 @@ import cv2
 import time
 import multiprocessing
 import shutil
-import ray
-ray.init()
-
 def capture_image():
     global knownFace
     knownImgPath='known'
