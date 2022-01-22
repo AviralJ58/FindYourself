@@ -9,56 +9,61 @@ import PySimpleGUI as sg
 from PIL import Image, ImageTk, ImageSequence
 sg.theme('Dark Blue 2')
 
+
 def index_window():
     sg.theme('Dark Blue 2')
-    index_layout = [
-        [sg.Text('Add path of the folder containing images to be indexed.')],
+    index_layout = [[sg.VPush()],
+        [sg.Text('Add path of the folder containing images.')],
         [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
-            sg.FolderBrowse(),],
+            sg.FolderBrowse(), ],
         [sg.Text('Add path of the folder to save the images.')],
         [sg.In(size=(25, 1), enable_events=True, key="-OUT-"),
-            sg.FolderBrowse(),],
-        [sg.Submit(), sg.Cancel()]
+            sg.FolderBrowse(), ],
+        [sg.B('OK'), sg.Cancel()],[sg.VPush()]
     ]
-    index_window = sg.Window('ImageFinder', index_layout,size=(400, 400),element_justification='center')
+    index_window = sg.Window('ImageFinder', index_layout, size=(
+        500, 400), element_justification='center',  font='Helvetica 15')
 
     while True:
         event, values = index_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
             index_window.close()
             break
-            
-        elif event == 'Submit':
-            directory=values['-IN-']
-            output=values['-OUT-']
+
+        elif event == 'OK':
+            directory = values['-IN-']
+            output = values['-OUT-']
             index_window.close()
-            
-            return directory,output
+
+            return directory, output
+
 
 def capture_image_window():
-    sg.theme('Dark Grey 13')
-    capture_window_layout = [
+    sg.theme('Dark Blue 2')
+    capture_window_layout = [[sg.VPush()],
         [sg.Text('Capture Image')],
-        [sg.B('OK'), sg.Cancel()]
+        [sg.B('OK'), sg.Cancel()],[sg.VPush()]
     ]
-    capture_window = sg.Window('Capture Image', capture_window_layout,size=(400, 400),element_justification='center')
+    capture_window = sg.Window('Capture Image', capture_window_layout, size=(
+        500, 400), element_justification='center', font='Helvetica 15')
     while True:
         event, values = capture_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
             capture_window.close()
             break
-            
+
         elif event == 'OK':
-            
+            sg.popup('Capturing images...',title='Capturing', font='Helvetica 15')
             key = capture_image()
-            if key !=1:
-                sg.popup('Something went wrong. Please try again!')
+            if key != 1:
+                sg.popup('Something went wrong. Please try again!', font='Helvetica 15')
                 break
 
             else:
                 capture_window.close()
-                sg.popup('Images Captured! Processing, please wait!')
+                sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', auto_close=True, auto_close_duration=5, button_type='')
                 break
+
 
 def capture_image():
     global knownFace
@@ -90,7 +95,8 @@ def capture_image():
     print("Encoding Complete!")
     return encode
 
-def find_images(lower, upper, files, knownFace, pid,output):
+
+def find_images(lower, upper, files, knownFace, pid, output):
     counter1 = 0
     counter2 = 0
     for i in range(lower, upper):
@@ -143,31 +149,36 @@ def find_images(lower, upper, files, knownFace, pid,output):
                 elif pid == 2:
                     counter2 += 1
 
+
 def gify():
+    sg.theme('Dark Blue 2')
     gif_filename = r'loading.gif'
 
-    layout = [[sg.Text('Finding you!',pad=(0,30), text_color='#FFF000',  justification='c', key='-T-', font=("Bodoni MT", 25))],
-            [sg.Image(key='-IMAGE-')]]
+    layout = [[sg.Text('Finding you!', pad=(0, 30), text_color='#FFF000',  justification='c', key='-T-')],
+              [sg.Image(key='-IMAGE-')]]
 
-    window = sg.Window('Processing', layout,size=(400, 400),element_justification='c', margins=(0,0), element_padding=(0,0), finalize=True)
+    window = sg.Window('Processing', layout, size=(
+        400, 400), element_justification='c', margins=(0, 0), element_padding=(0, 0), finalize=True, font='Helvetica 15')
 
-    window['-T-'].expand(True, True, True)      
+    window['-T-'].expand(True, True, True)
 
-    interframe_duration = Image.open(gif_filename).info['duration']     
+    interframe_duration = Image.open(gif_filename).info['duration']
 
     while True:
         for frame in ImageSequence.Iterator(Image.open(gif_filename)):
             event, values = window.read(timeout=interframe_duration)
             if event == sg.WIN_CLOSED:
                 exit(0)
-            window['-IMAGE-'].update(data=ImageTk.PhotoImage(frame) )
+            window['-IMAGE-'].update(data=ImageTk.PhotoImage(frame))
 
 
 def mainfunc(output):
     print("Starting...")
-    p0=multiprocessing.Process(target=gify)
-    p1=multiprocessing.Process(target=find_images, args=(0,int(len(files)/2),files,knownFace,1,output))
-    p2=multiprocessing.Process(target=find_images, args=(int(len(files)/2),len(files),files,knownFace,2,output))
+    p0 = multiprocessing.Process(target=gify)
+    p1 = multiprocessing.Process(target=find_images, args=(
+        0, int(len(files)/2), files, knownFace, 1, output))
+    p2 = multiprocessing.Process(target=find_images, args=(
+        int(len(files)/2), len(files), files, knownFace, 2, output))
     p0.start()
     p1.start()
     p2.start()
@@ -177,27 +188,29 @@ def mainfunc(output):
 
     shutil.rmtree('faces', ignore_errors=True)
     shutil.rmtree('known', ignore_errors=True)
-    end=time.time()
+    end = time.time()
     print(end-start)
 
-    if end-start>0:
+    if end-start > 0:
         p0.terminate()
-        sg.popup('Found you in {} photos.\nTime taken: {}'.format(len(os.listdir(output)),str(end-start)))
+        sg.popup('Found you in {} photos.\nTime taken: {} secs'.format(
+            len(os.listdir(output)), str(end-start)[:5]), title='Done', font='Helvetica 15')
         return 0
 
-if __name__ == '__main__':
-    start= time.time()
-    knownFace=[]
-    files=[]
-    directory,output=index_window()
 
-    if(directory==''):
+if __name__ == '__main__':
+    start = time.time()
+    knownFace = []
+    files = []
+    directory, output = index_window()
+
+    if(directory == ''):
         print("No directory selected")
         exit()
-    if(output==''):
+    if(output == ''):
         print("No output folder selected")
         exit()
-    
+
     else:
         for filename in os.listdir(directory):
             f = os.path.join(directory, filename)
@@ -206,4 +219,3 @@ if __name__ == '__main__':
         capture_image_window()
 
     mainfunc(output)
-    
