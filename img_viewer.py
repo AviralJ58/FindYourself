@@ -9,7 +9,6 @@ import PySimpleGUI as sg
 from PIL import Image, ImageTk, ImageSequence
 sg.theme('Dark Blue 2')
 
-
 def index_window():
     sg.theme('Dark Blue 2')
     index_layout = [[sg.VPush()],
@@ -22,13 +21,13 @@ def index_window():
         [sg.B('OK'), sg.Cancel()],[sg.VPush()]
     ]
     index_window = sg.Window('ImageFinder', index_layout, size=(
-        500, 400), element_justification='center',  font='Helvetica 15')
+        500, 400), element_justification='center',  font='Helvetica 15', icon='icon.ico')
 
     while True:
         event, values = index_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
             index_window.close()
-            break
+            exit(0)
 
         elif event == 'OK':
             directory = values['-IN-']
@@ -37,33 +36,39 @@ def index_window():
 
             return directory, output
 
-
 def capture_image_window():
+    global p0
     sg.theme('Dark Blue 2')
     capture_window_layout = [[sg.VPush()],
-        [sg.Text('Capture Image')],
-        [sg.B('OK'), sg.Cancel()],[sg.VPush()]
+        [sg.Text('The application needs to capture some images to\ndetect your photos. Allow access to webcam?')],
+        [sg.B('Allow'), sg.Cancel()],[sg.VPush()],[sg.Text('Please wait for the process to complete!',key='cnf')]
     ]
     capture_window = sg.Window('Capture Image', capture_window_layout, size=(
-        500, 400), element_justification='center', font='Helvetica 15')
+        500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico')
+    capture_window.Element('cnf').Update(visible = False)
     while True:
         event, values = capture_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
+            sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15')
             capture_window.close()
-            break
+            exit(0)
 
-        elif event == 'OK':
+        elif event == 'Allow':
+            capture_window.Element('cnf').Update(visible = True)
             sg.popup('Capturing images...',title='Capturing', font='Helvetica 15')
+            capture_window.disable()
             key = capture_image()
             if key != 1:
                 sg.popup('Something went wrong. Please try again!', font='Helvetica 15')
+                capture_window.enable()
                 break
 
             else:
+                p0 = multiprocessing.Process(target=gify)
+                p0.start()
                 capture_window.close()
                 sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', auto_close=True, auto_close_duration=5, button_type='')
                 break
-
 
 def capture_image():
     global knownFace
@@ -158,7 +163,7 @@ def gify():
               [sg.Image(key='-IMAGE-')]]
 
     window = sg.Window('Processing', layout, size=(
-        400, 400), element_justification='c', margins=(0, 0), element_padding=(0, 0), finalize=True, font='Helvetica 15')
+        400, 400), element_justification='c', margins=(0, 0), element_padding=(0, 0), finalize=True, font='Helvetica 15', icon='icon.ico')
 
     window['-T-'].expand(True, True, True)
 
@@ -174,12 +179,10 @@ def gify():
 
 def mainfunc(output):
     print("Starting...")
-    p0 = multiprocessing.Process(target=gify)
     p1 = multiprocessing.Process(target=find_images, args=(
         0, int(len(files)/2), files, knownFace, 1, output))
     p2 = multiprocessing.Process(target=find_images, args=(
         int(len(files)/2), len(files), files, knownFace, 2, output))
-    p0.start()
     p1.start()
     p2.start()
     p1.join()
@@ -199,6 +202,8 @@ def mainfunc(output):
 
 
 if __name__ == '__main__':
+    # On Windows calling this function is necessary.
+    multiprocessing.freeze_support()
     start = time.time()
     knownFace = []
     files = []
@@ -206,16 +211,17 @@ if __name__ == '__main__':
 
     if(directory == ''):
         print("No directory selected")
-        exit()
+        exit(0)
     if(output == ''):
         print("No output folder selected")
-        exit()
+        exit(0)
 
     else:
         for filename in os.listdir(directory):
             f = os.path.join(directory, filename)
             if (f.lower().endswith(".jpg") or f.lower().endswith(".png") or f.lower().endswith(".jpeg")):
+                f=os.path.normcase(f)
                 files.append(f)
+        
         capture_image_window()
-
-    mainfunc(output)
+        mainfunc(output)
