@@ -10,8 +10,12 @@ from PIL import Image, ImageTk, ImageSequence
 sg.theme('Dark Blue 2')
 
 def index_window():
+    sg.Window('Title',[[sg.Image('icon.png')]], transparent_color=sg.theme_background_color(),
+        no_titlebar=True,keep_on_top=True).read(timeout=1500,close=True)
     sg.theme('Dark Blue 2')
-    index_layout = [[sg.VPush()],
+    index_layout = [[sg.Image('icon200.png',size=(200,200))],
+        [sg.Text('ImageFinder',text_color='#fe6743',  justification='c', key='-T-',font=('Helvetica 15',32))],
+        [sg.VPush()],
         [sg.Text('Add path of the folder containing images.')],
         [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
             sg.FolderBrowse(), ],
@@ -21,7 +25,7 @@ def index_window():
         [sg.B('OK'), sg.Cancel()],[sg.VPush()]
     ]
     index_window = sg.Window('ImageFinder', index_layout, size=(
-        500, 400), element_justification='center',  font='Helvetica 15', icon='icon.ico')
+        500, 500), element_justification='center',  font=('Helvetica 15',15), icon='icon.ico')
 
     while True:
         event, values = index_window.read()
@@ -41,7 +45,7 @@ def capture_image_window():
     sg.theme('Dark Blue 2')
     capture_window_layout = [[sg.VPush()],
         [sg.Text('The application needs to capture some images to\ndetect your photos. Allow access to webcam?')],
-        [sg.B('Allow'), sg.Cancel()],[sg.VPush()],[sg.Text('Please wait for the process to complete!',key='cnf')]
+        [sg.B('Allow'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush()]
     ]
     capture_window = sg.Window('Capture Image', capture_window_layout, size=(
         500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico')
@@ -144,9 +148,10 @@ def find_images(lower, upper, files, knownFace, pid, output):
                     knownFace, unknownEncodings[0], 0.55)
 
                 if result.count(True) >= 5:
-                    if not os.path.exists(output):
-                        os.makedirs(output)
-                    copy(filename, output)
+                    outPath=os.path.join(output,'images')
+                    if not os.path.exists(outPath):
+                        os.makedirs(outPath)
+                    copy(filename, outPath)
                     break
 
                 if pid == 1:
@@ -159,7 +164,7 @@ def gify():
     sg.theme('Dark Blue 2')
     gif_filename = r'loading.gif'
 
-    layout = [[sg.Text('Finding you!', pad=(0, 30), text_color='#FFF000',  justification='c', key='-T-')],
+    layout = [[sg.Text('Finding you!', pad=(0, 30), text_color='#FFF000',  justification='c', key='-T-',font=('Helvetica 15',30))],
               [sg.Image(key='-IMAGE-')]]
 
     window = sg.Window('Processing', layout, size=(
@@ -196,8 +201,9 @@ def mainfunc(output):
 
     if end-start > 0:
         p0.terminate()
+        outPath=os.path.join(output,'images')
         sg.popup('Found you in {} photos.\nTime taken: {} secs'.format(
-            len(os.listdir(output)), str(end-start)[:5]), title='Done', font='Helvetica 15')
+            len(os.listdir(outPath)), str(end-start)[:5]), title='Done', font='Helvetica 15')
         return 0
 
 
