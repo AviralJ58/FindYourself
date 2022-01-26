@@ -40,7 +40,7 @@ def index_window():
 
             return directory, output
 
-def capture_image_window():
+def capture_image_window(user):
     global p0
     sg.theme('Dark Blue 2')
     capture_window_layout = [[sg.VPush()],
@@ -61,7 +61,7 @@ def capture_image_window():
             capture_window.Element('cnf').Update(visible = True)
             sg.popup('Capturing images...',title='Capturing', font='Helvetica 15')
             capture_window.disable()
-            key = capture_image()
+            key= capture_image(user)
             if key != 1:
                 sg.popup('Something went wrong. Please try again!', font='Helvetica 15')
                 capture_window.enable()
@@ -73,10 +73,12 @@ def capture_image_window():
                 capture_window.close()
                 sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', auto_close=True, auto_close_duration=5, button_type='')
                 break
-
-def capture_image():
+            
+def capture_image(user):
     global knownFace
-    knownImgPath = 'known'
+    knownImgPath=os.path.join(user,'known')
+    if not os.path.exists(knownImgPath):
+        os.makedirs(knownImgPath)
 
     print("Capturing images... ")
     camera = cv2.VideoCapture(0)
@@ -84,9 +86,7 @@ def capture_image():
         time.sleep(1)
         print(i+1, "done")
         return_value, image = camera.read()
-        if not os.path.exists('known'):
-            os.makedirs('known')
-        cv2.imwrite('known\opencv'+str(i)+'.png', image)
+        cv2.imwrite(os.path.join(knownImgPath,'opencv'+str(i)+'.png'), image)
     del(camera)
 
     print("Encoding...")
@@ -105,7 +105,7 @@ def capture_image():
     return encode
 
 
-def find_images(lower, upper, files, knownFace, pid, output):
+def find_images(lower, upper, files, knownFace, pid, output, user):
     counter1 = 0
     counter2 = 0
     for i in range(lower, upper):
@@ -116,30 +116,32 @@ def find_images(lower, upper, files, knownFace, pid, output):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(gray, 1.05, 6, minSize=(30, 30))
         print("Found {} face(s) in {}".format(len(faces), filename))
-
+        loc=os.path.join(user,'faces')
+        temp1=(os.path.join(loc,'temp1'))
+        temp2=(os.path.join(loc,'temp2'))
         for (x, y, w, h) in faces:
             cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 2)
             faces = img[y:y + h, x:x + w]
             if pid == 1:
-                if not os.path.exists('faces\\temp1'):
-                    os.makedirs('faces\\temp1')
+                if not os.path.exists(temp1):
+                    os.makedirs(temp1)
 
-                cv2.imwrite('faces\\temp1\\temp_face' +
+                cv2.imwrite(temp1+'\\temp_face' +
                             str(counter1)+'.jpg', faces)
 
             elif pid == 2:
-                if not os.path.exists('faces\\temp2'):
-                    os.makedirs('faces\\temp2')
+                if not os.path.exists(temp2):
+                    os.makedirs(temp2)
 
-                cv2.imwrite('faces\\temp2\\temp_face' +
+                cv2.imwrite(temp2+'\\temp_face' +
                             str(counter2)+'.jpg', faces)
 
             if pid == 1:
                 unknown = face_recognition.load_image_file(
-                    'faces\\temp1\\temp_face'+str(counter1)+'.jpg')
+                    temp1+'\\temp_face'+str(counter1)+'.jpg')
             elif pid == 2:
                 unknown = face_recognition.load_image_file(
-                    'faces\\temp2\\temp_face'+str(counter2)+'.jpg')
+                    temp2+'\\temp_face'+str(counter2)+'.jpg')
 
             unknownEncodings = face_recognition.face_encodings(unknown)
 
@@ -182,20 +184,19 @@ def gify():
             window['-IMAGE-'].update(data=ImageTk.PhotoImage(frame))
 
 
-def mainfunc(output):
+def mainfunc(output,user):
     print("Starting...")
     p1 = multiprocessing.Process(target=find_images, args=(
-        0, int(len(files)/2), files, knownFace, 1, output))
+        0, int(len(files)/2), files, knownFace, 1, output, user))
     p2 = multiprocessing.Process(target=find_images, args=(
-        int(len(files)/2), len(files), files, knownFace, 2, output))
+        int(len(files)/2), len(files), files, knownFace, 2, output, user))
     p1.start()
     p2.start()
     p1.join()
     p2.join()
     print("Done!")
 
-    shutil.rmtree('faces', ignore_errors=True)
-    shutil.rmtree('known', ignore_errors=True)
+    shutil.rmtree(user, ignore_errors=True)
     end = time.time()
     print(end-start)
 
@@ -213,6 +214,8 @@ if __name__ == '__main__':
     start = time.time()
     knownFace = []
     files = []
+    user=os.path.expanduser("~")
+    user=os.path.join(user,'ImageFinder')
     directory, output = index_window()
 
     if(directory == ''):
@@ -229,5 +232,5 @@ if __name__ == '__main__':
                 f=os.path.normcase(f)
                 files.append(f)
         
-        capture_image_window()
-        mainfunc(output)
+        capture_image_window(user)
+        mainfunc(output,user)
