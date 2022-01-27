@@ -44,8 +44,9 @@ def capture_image_window(user):
     global p0
     sg.theme('Dark Blue 2')
     capture_window_layout = [[sg.VPush()],
-        [sg.Text('The application needs to capture some images to\ndetect your photos. Allow access to webcam?')],
-        [sg.B('Allow'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush()]
+        [sg.Text('The application needs some images to identify \nyou in photos. Please select an action.', justification='c')],
+        [sg.Button('Capture using Webcam')], [sg.Button('Upload a folder containing photos')], [sg.Cancel()],
+        [sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush()]
     ]
     capture_window = sg.Window('Capture Image', capture_window_layout, size=(
         500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico')
@@ -53,17 +54,20 @@ def capture_image_window(user):
     while True:
         event, values = capture_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
-            sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15')
+            sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15', 
+                auto_close=True, auto_close_duration=3,)
             capture_window.close()
             exit(0)
 
-        elif event == 'Allow':
+        elif "Capture using Webcam" in event:
             capture_window.Element('cnf').Update(visible = True)
-            sg.popup('Capturing images...',title='Capturing', font='Helvetica 15')
+            sg.popup('Capturing images...',title='Capturing', font='Helvetica 15', 
+                auto_close=True, auto_close_duration=3)
             capture_window.disable()
             key= capture_image(user)
             if key != 1:
-                sg.popup('Something went wrong. Please try again!', font='Helvetica 15')
+                sg.popup('Something went wrong. Please try again!', font='Helvetica 15', 
+                    auto_close=True, auto_close_duration=3)
                 capture_window.enable()
                 break
 
@@ -71,9 +75,24 @@ def capture_image_window(user):
                 p0 = multiprocessing.Process(target=gify)
                 p0.start()
                 capture_window.close()
-                sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', auto_close=True, auto_close_duration=5, button_type='')
+                sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', 
+                    auto_close=True, auto_close_duration=3, button_type='')
                 break
             
+        elif "Upload a folder containing photos" in event:
+            capture_window.close()
+            key= upload_window(user)
+            if key != 1:
+                sg.popup('Something went wrong. Please try again!', font='Helvetica 15',
+                    auto_close=True, auto_close_duration=3)
+                capture_window.enable()
+                break
+
+            else:
+                p0 = multiprocessing.Process(target=gify)
+                p0.start()
+                break
+
 def capture_image(user):
     global knownFace
     knownImgPath=os.path.join(user,'known')
@@ -101,9 +120,56 @@ def capture_image(user):
             capture_image()
 
     encode = 1
+    sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', 
+        auto_close=True, auto_close_duration=3, button_type='')
+
     print("Encoding Complete!")
     return encode
 
+def upload_window(user):
+    window_layout = [[sg.VPush()],
+        [sg.Text('Upload a folder containing your photos. \nMore photos will increase accuracy. \nPlease make sure the folder contains solo images.', 
+            justification='c')],
+        [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
+            sg.FolderBrowse(), ],
+        [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush()]
+    ]
+    window = sg.Window('ImageFinder', window_layout, size=(500, 500), 
+        element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True)
+    window.Element('cnf').Update(visible = False)
+
+    while True:
+        event, values = window.read()
+        if event in (None, 'Cancel', sg.WIN_CLOSED):
+            sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15')
+            window.close()
+            exit(0)
+
+        elif event == 'OK':
+            window.disable()
+            window.Element('cnf').Update(visible = True)
+            sg.popup('Uploading images...',title='Uploading', font='Helvetica 15',
+                auto_close=True, auto_close_duration=3)
+            directory = values['-IN-']
+            print("Encoding...")
+            for filename in os.listdir(directory):
+                f = os.path.join(directory, filename)
+                if (f.lower().endswith(".jpg") or f.lower().endswith(".png") or f.lower().endswith(".jpeg")):
+                    known = face_recognition.load_image_file(f)
+                    try:
+                        knownEncoding = face_recognition.face_encodings(known)[0]
+                        knownFace.append(knownEncoding)
+                    except IndexError:
+                        print("Failed to encode. Trying again.")
+                        window.close()
+                        upload_window(user)
+
+            encode = 1
+            print("Encoding Complete!")
+            window.close()
+            return encode
+
+            
 
 def find_images(lower, upper, files, knownFace, pid, output, user):
     counter1 = 0
@@ -169,8 +235,8 @@ def gify():
     layout = [[sg.Text('Finding you!', pad=(0, 30), text_color='#FFF000',  justification='c', key='-T-',font=('Helvetica 15',30))],
               [sg.Image(key='-IMAGE-')]]
 
-    window = sg.Window('Processing', layout, size=(
-        400, 400), element_justification='c', margins=(0, 0), element_padding=(0, 0), finalize=True, font='Helvetica 15', icon='icon.ico')
+    window = sg.Window('Processing', layout, size=(400, 400), element_justification='c', margins=(0, 0), 
+        element_padding=(0, 0), finalize=True, font='Helvetica 15', icon='icon.ico')
 
     window['-T-'].expand(True, True, True)
 
@@ -206,7 +272,6 @@ def mainfunc(output,user):
         sg.popup('Found you in {} photos.\nTime taken: {} secs'.format(
             len(os.listdir(outPath)), str(end-start)[:5]), title='Done', font='Helvetica 15')
         return 0
-
 
 if __name__ == '__main__':
     # On Windows calling this function is necessary.
