@@ -41,10 +41,10 @@ def capture_image_window(user):
     capture_window_layout = [[sg.VPush(background_color='#0E1E42')],
         [sg.Text('The application needs some images to identify \nyou in photos. Please select an action.', justification='c',background_color='#0E1E42')],
         [sg.Button('Capture using Webcam')], [sg.Button('Upload a folder containing photos')], [sg.Cancel()],
-        [sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush(background_color='#0E1E42')]
+        [sg.Text('Please wait for the process to complete!',key='cnf')],[sg.Push(background_color='#0E1E42'),sg.Image('img2.png',background_color='#0E1E42')]
     ]
     capture_window = sg.Window('Capture Image', capture_window_layout, size=(
-        500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico',background_color='#0E1E42')
+        500, 550), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico',background_color='#0E1E42')
     capture_window.Element('cnf').Update(visible = False)
     while True:
         event, values = capture_window.read()
@@ -125,10 +125,8 @@ def upload_window(user):
     window_layout = [[sg.VPush(background_color='#0E1E42')],
         [sg.Text('Upload a folder containing your photos. \nMore photos will increase accuracy. \nPlease make sure the folder contains solo images.', 
             justification='c',background_color='#0E1E42')],
-        [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
-            sg.FolderBrowse(), ],
-        [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42')],[sg.VPush(background_color='#0E1E42')]
-    ]
+        [sg.In(size=(25, 1), enable_events=True, key="-IN-"), sg.FolderBrowse(), ], [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42'),[sg.VPush(background_color='#0E1E42')],[sg.Push(background_color='#0E1E42'),sg.Image('img2.png',background_color='#0E1E42')]]]
+    
     window = sg.Window('ImageFinder', window_layout, size=(500, 500), 
         element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True, background_color='#0E1E42')
     window.Element('cnf').Update(visible = False)
