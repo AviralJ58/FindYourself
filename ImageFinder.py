@@ -294,3 +294,5 @@ if __name__ == '__main__':
         
         capture_image_window(user)
         mainfunc(output,user)
+
+        
