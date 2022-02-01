@@ -7,7 +7,6 @@ import multiprocessing
 import shutil
 import PySimpleGUI as sg
 from PIL import Image, ImageTk, ImageSequence
-sg.theme_background_color('#0E1E42')
 
 def index_window():
     sg.Window('Title',[[sg.Image('icon.png')]], transparent_color=sg.theme_background_color(),
@@ -45,7 +44,7 @@ def capture_image_window(user):
         [sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush(background_color='#0E1E42')]
     ]
     capture_window = sg.Window('Capture Image', capture_window_layout, size=(
-        500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico')
+        500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico',background_color='#0E1E42')
     capture_window.Element('cnf').Update(visible = False)
     while True:
         event, values = capture_window.read()
@@ -131,7 +130,7 @@ def upload_window(user):
         [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42')],[sg.VPush(background_color='#0E1E42')]
     ]
     window = sg.Window('ImageFinder', window_layout, size=(500, 500), 
-        element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True)
+        element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True, background_color='#0E1E42')
     window.Element('cnf').Update(visible = False)
 
     while True:
