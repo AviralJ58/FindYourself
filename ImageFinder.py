@@ -7,25 +7,22 @@ import multiprocessing
 import shutil
 import PySimpleGUI as sg
 from PIL import Image, ImageTk, ImageSequence
-sg.theme('Dark Blue 2')
+sg.theme_background_color('#0E1E42')
 
 def index_window():
     sg.Window('Title',[[sg.Image('icon.png')]], transparent_color=sg.theme_background_color(),
         no_titlebar=True,keep_on_top=True).read(timeout=1500,close=True)
-    sg.theme('Dark Blue 2')
-    index_layout = [[sg.Image('icon200.png',size=(200,200))],
-        [sg.Text('ImageFinder',text_color='#fe6743',  justification='c', key='-T-',font=('Helvetica 15',32))],
-        [sg.VPush()],
-        [sg.Text('Add path of the folder containing images.')],
+    index_layout = [[sg.Image('img1.png')],
+        [sg.Text('Add path of the folder containing images.',background_color='#0E1E42')],
         [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
             sg.FolderBrowse(), ],
-        [sg.Text('Add path of the folder to save the images.')],
+        [sg.Text('Add path of the folder to save the images.',background_color='#0E1E42')],
         [sg.In(size=(25, 1), enable_events=True, key="-OUT-"),
             sg.FolderBrowse(), ],
-        [sg.B('OK'), sg.Cancel()],[sg.VPush()]
+        [sg.B('OK'), sg.Cancel()],[sg.VPush(background_color='#0E1E42')]
     ]
     index_window = sg.Window('ImageFinder', index_layout, size=(
-        500, 500), element_justification='center',  font=('Helvetica 15',15), icon='icon.ico')
+        500, 700), element_justification='center',  font=('Helvetica 15',15), icon='icon.ico', background_color='#0E1E42',margins=(0,0))
 
     while True:
         event, values = index_window.read()
@@ -42,11 +39,10 @@ def index_window():
 
 def capture_image_window(user):
     global p0
-    sg.theme('Dark Blue 2')
-    capture_window_layout = [[sg.VPush()],
-        [sg.Text('The application needs some images to identify \nyou in photos. Please select an action.', justification='c')],
+    capture_window_layout = [[sg.VPush(background_color='#0E1E42')],
+        [sg.Text('The application needs some images to identify \nyou in photos. Please select an action.', justification='c',background_color='#0E1E42')],
         [sg.Button('Capture using Webcam')], [sg.Button('Upload a folder containing photos')], [sg.Cancel()],
-        [sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush()]
+        [sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush(background_color='#0E1E42')]
     ]
     capture_window = sg.Window('Capture Image', capture_window_layout, size=(
         500, 400), element_justification='center', font='Helvetica 15',finalize=True, icon='icon.ico')
@@ -55,19 +51,19 @@ def capture_image_window(user):
         event, values = capture_window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
             sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15', 
-                auto_close=True, auto_close_duration=3,)
+                auto_close=True, auto_close_duration=3, background_color='#0E3E7B',icon='icon.ico')
             capture_window.close()
             exit(0)
 
         elif "Capture using Webcam" in event:
             capture_window.Element('cnf').Update(visible = True)
             sg.popup('Capturing images...',title='Capturing', font='Helvetica 15', 
-                auto_close=True, auto_close_duration=3)
+                auto_close=True, auto_close_duration=3, background_color='#0E3E7B',icon='icon.ico')
             capture_window.disable()
             key= capture_image(user)
             if key != 1:
                 sg.popup('Something went wrong. Please try again!', font='Helvetica 15', 
-                    auto_close=True, auto_close_duration=3)
+                    auto_close=True, auto_close_duration=3,background_color='#0E3E7B',icon='icon.ico')
                 capture_window.enable()
                 break
 
@@ -76,7 +72,7 @@ def capture_image_window(user):
                 p0.start()
                 capture_window.close()
                 sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', 
-                    auto_close=True, auto_close_duration=3, button_type='')
+                    auto_close=True, auto_close_duration=3, button_type='',background_color='#0E3E7B',icon='icon.ico')
                 break
             
         elif "Upload a folder containing photos" in event:
@@ -84,7 +80,7 @@ def capture_image_window(user):
             key= upload_window(user)
             if key != 1:
                 sg.popup('Something went wrong. Please try again!', font='Helvetica 15',
-                    auto_close=True, auto_close_duration=3)
+                    auto_close=True, auto_close_duration=3,background_color='#0E3E7B',icon='icon.ico')
                 capture_window.enable()
                 break
 
@@ -121,18 +117,18 @@ def capture_image(user):
 
     encode = 1
     sg.popup('Images Captured! Processing, please wait!', title='Captured', font='Helvetica 15', 
-        auto_close=True, auto_close_duration=3, button_type='')
+        auto_close=True, auto_close_duration=3, button_type='',background_color='#0E3E7B',icon='icon.ico')
 
     print("Encoding Complete!")
     return encode
 
 def upload_window(user):
-    window_layout = [[sg.VPush()],
+    window_layout = [[sg.VPush(background_color='#0E1E42')],
         [sg.Text('Upload a folder containing your photos. \nMore photos will increase accuracy. \nPlease make sure the folder contains solo images.', 
-            justification='c')],
+            justification='c',background_color='#0E1E42')],
         [sg.In(size=(25, 1), enable_events=True, key="-IN-"),
             sg.FolderBrowse(), ],
-        [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf')],[sg.VPush()]
+        [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42')],[sg.VPush(background_color='#0E1E42')]
     ]
     window = sg.Window('ImageFinder', window_layout, size=(500, 500), 
         element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True)
@@ -141,7 +137,7 @@ def upload_window(user):
     while True:
         event, values = window.read()
         if event in (None, 'Cancel', sg.WIN_CLOSED):
-            sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15')
+            sg.popup('Operation cancelled',title='Terminating', font='Helvetica 15',background_color='#0E3E7B',icon='icon.ico')
             window.close()
             exit(0)
 
@@ -149,7 +145,7 @@ def upload_window(user):
             window.disable()
             window.Element('cnf').Update(visible = True)
             sg.popup('Uploading images...',title='Uploading', font='Helvetica 15',
-                auto_close=True, auto_close_duration=3)
+                auto_close=True, auto_close_duration=3,background_color='#0E3E7B',icon='icon.ico')
             directory = values['-IN-']
             print("Encoding...")
             for filename in os.listdir(directory):
@@ -229,10 +225,10 @@ def find_images(lower, upper, files, knownFace, pid, output, user):
 
 
 def gify():
-    sg.theme('Dark Blue 2')
+    sg.theme_background_color('#3F51B5')
     gif_filename = r'loading.gif'
 
-    layout = [[sg.Text('Finding you!', pad=(0, 30), text_color='#FFF000',  justification='c', key='-T-',font=('Helvetica 15',30))],
+    layout = [[sg.Text('Finding you!', pad=(0, 30), text_color='#F7AC3B',  justification='c', key='-T-',font=('Helvetica 15',30),background_color='#3F51B5')],
               [sg.Image(key='-IMAGE-')]]
 
     window = sg.Window('Processing', layout, size=(400, 400), element_justification='c', margins=(0, 0), 
@@ -270,7 +266,7 @@ def mainfunc(output,user):
         p0.terminate()
         outPath=os.path.join(output,'images')
         sg.popup('Found you in {} photos.\nTime taken: {} secs'.format(
-            len(os.listdir(outPath)), str(end-start)[:5]), title='Done', font='Helvetica 15')
+            len(os.listdir(outPath)), str(end-start)[:5]), title='Done', font='Helvetica 15',background_color='#0E3E7B',icon='icon.ico')
         return 0
 
 if __name__ == '__main__':
