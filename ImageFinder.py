@@ -125,7 +125,7 @@ def upload_window(user):
     window_layout = [[sg.VPush(background_color='#0E1E42')],
         [sg.Text('Upload a folder containing your photos. \nMore photos will increase accuracy. \nPlease make sure the folder contains solo images.', 
             justification='c',background_color='#0E1E42')],
-        [sg.In(size=(25, 1), enable_events=True, key="-IN-"), sg.FolderBrowse(), ], [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42'),[sg.VPush(background_color='#0E1E42')],[sg.Push(background_color='#0E1E42'),sg.Image('img2.png',background_color='#0E1E42')]]]
+        [sg.In(size=(25, 1), enable_events=True, key="-IN-"), sg.FolderBrowse(), ], [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42'),[sg.Push(background_color='#0E1E42'),sg.Image('img2.png',background_color='#0E1E42')]]]
     
     window = sg.Window('ImageFinder', window_layout, size=(500, 500), 
         element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True, background_color='#0E1E42')
