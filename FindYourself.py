@@ -20,7 +20,7 @@ def index_window():
             sg.FolderBrowse(), ],
         [sg.B('OK'), sg.Cancel()],[sg.VPush(background_color='#0E1E42')]
     ]
-    index_window = sg.Window('ImageFinder', index_layout, size=(
+    index_window = sg.Window('Find Yourself', index_layout, size=(
         500, 700), element_justification='center',  font=('Helvetica 15',15), icon='icon.ico', background_color='#0E1E42',margins=(0,0))
 
     while True:
@@ -127,7 +127,7 @@ def upload_window(user):
             justification='c',background_color='#0E1E42')],
         [sg.In(size=(25, 1), enable_events=True, key="-IN-"), sg.FolderBrowse(), ], [sg.B('OK'), sg.Cancel()],[sg.Text('Please wait for the process to complete!',key='cnf',background_color='#0E1E42'),[sg.Push(background_color='#0E1E42'),sg.Image('img2.png',background_color='#0E1E42')]]]
     
-    window = sg.Window('ImageFinder', window_layout, size=(500, 500), 
+    window = sg.Window('Find Yourself', window_layout, size=(500, 500), 
         element_justification='center', font=('Helvetica 15',15), icon='icon.ico', finalize=True, background_color='#0E1E42')
     window.Element('cnf').Update(visible = False)
 
@@ -273,7 +273,7 @@ if __name__ == '__main__':
     knownFace = []
     files = []
     user=os.path.expanduser("~")
-    user=os.path.join(user,'ImageFinder')
+    user=os.path.join(user,'Find Yourself')
     directory, output = index_window()
 
     if(directory == ''):
